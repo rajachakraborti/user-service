@@ -1,4 +1,4 @@
-package com.carta.user.controller;
+﻿package com.carta.user.controller;
 
 import com.carta.user.context.TenantContext;
 import com.carta.user.dto.UserProfileDTO;
@@ -41,5 +41,6 @@ public class UserControllerTest {
     void testGetUserProfileThrowsOnBlankTenantId() {
         assertThrows(IllegalArgumentException.class, () -> userController.getUserProfile(null, "john@example.com"));
         assertThrows(IllegalArgumentException.class, () -> userController.getUserProfile("", "john@example.com"));
+        assertThrows(IllegalArgumentException.class, () -> userController.getUserProfile("   ", "john@example.com"));
     }
 }
