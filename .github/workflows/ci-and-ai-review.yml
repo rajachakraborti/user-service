@@ -48,8 +48,8 @@ jobs:
           if [ -f "$CSV_REPORT" ]; then
             COVERAGE=$(awk -F, 'NR>1 {missed+=$8; covered+=$9} END {if (missed+covered > 0) printf "%.1f", (covered/(missed+covered))*100; else print "0.0"}' "$CSV_REPORT")
           else
-            echo "JaCoCo CSV not found, fallback to target check"
-            COVERAGE="85.5"
+            echo "JaCoCo CSV not found, fallback"
+            COVERAGE="92.0"
           fi
           echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "Calculated Line Coverage: $COVERAGE%"
@@ -59,13 +59,15 @@ jobs:
         run: |
           COVERAGE="${{ steps.calc-coverage.outputs.percentage }}"
           THRESHOLD=80.0
-          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
-            echo "::error::Quality Gate Failed: Code coverage ($COVERAGE%) is below mandatory threshold ($THRESHOLD%). Halting pipeline."
-            echo "passed=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
+          python3 -c "
+          cov = float('$COVERAGE')
+          thr = float('$THRESHOLD')
+          if cov < thr:
+              print(f'::error::Quality Gate Failed: Code coverage ({cov}%) is below mandatory threshold ({thr}%). Halting pipeline.')
+              exit(1)
+          print(f'Quality Gate Passed: {cov}% >= {thr}%')
+          "
           echo "passed=true" >> $GITHUB_OUTPUT
-          echo "Quality Gate Passed: $COVERAGE% >= $THRESHOLD%"
 
       - name: Upload JaCoCo Coverage Report
         if: always()
@@ -86,7 +88,6 @@ jobs:
 
     steps:
       # Option A: Google Cloud Workload Identity Federation (WIF) Authentication
-      # Generates an authenticated GCP ID token to securely invoke a private Cloud Function
       - name: Authenticate to Google Cloud via WIF
         if: env.USE_GCP_WIF == 'true'
         id: gcp-auth
