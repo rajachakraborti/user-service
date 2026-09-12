@@ -1,4 +1,4 @@
-﻿package com.carta.user.dao;
+package com.carta.user.dao;
 
 import com.carta.user.model.User;
 import org.junit.jupiter.api.BeforeEach;

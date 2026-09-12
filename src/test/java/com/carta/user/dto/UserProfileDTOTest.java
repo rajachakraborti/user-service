@@ -1,4 +1,4 @@
-﻿package com.carta.user.dto;
+package com.carta.user.dto;
 
 import org.junit.jupiter.api.Test;
 import java.time.Instant;

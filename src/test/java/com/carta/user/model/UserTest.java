@@ -1,4 +1,4 @@
-﻿package com.carta.user.model;
+package com.carta.user.model;
 
 import org.junit.jupiter.api.Test;
 import java.time.Instant;
