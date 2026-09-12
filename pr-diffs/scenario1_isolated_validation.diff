@@ -1,0 +1,15 @@
+--- a/src/main/java/com/carta/user/model/User.java
++++ b/src/main/java/com/carta/user/model/User.java
+@@ -43,6 +43,8 @@ public class User {
+      */
+     public boolean isValidEmail(String candidateEmail) {
+-        if (candidateEmail == null || candidateEmail.trim().isEmpty()) {
++        if (candidateEmail == null || candidateEmail.strip().isEmpty()) {
++            return false;
++        }
++        if (!candidateEmail.contains("@")) {
+             return false;
+         }
+-        return EMAIL_REGEX.matcher(candidateEmail.trim()).matches();
++        return EMAIL_REGEX.matcher(candidateEmail.strip().toLowerCase()).matches();
+     }

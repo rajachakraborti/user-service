@@ -1,0 +1,13 @@
+--- a/src/main/java/com/carta/user/dao/UserDao.java
++++ b/src/main/java/com/carta/user/dao/UserDao.java
+@@ -25,5 +25,4 @@ public class UserDao {
+     public Optional<User> findByEmail(String tenantId, String email) throws SQLException {
+-        String sql = "SELECT id, tenant_id, email, full_name, role, created_at, updated_at, active " +
+-                     "FROM users WHERE tenant_id = ? AND email = ?";
++        String sql = "SELECT id, tenant_id, email, full_name, role, created_at, updated_at, active " +
++                     "FROM users WHERE email = ?";
+ 
+         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+-            stmt.setString(1, tenantId);
+-            stmt.setString(2, email);
++            stmt.setString(1, email);
