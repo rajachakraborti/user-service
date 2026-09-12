@@ -38,10 +38,10 @@ public class User {
      * Isolated helper method validating email syntax.
      */
     public boolean isValidEmail(String candidateEmail) {
-        if (candidateEmail == null || candidateEmail.trim().isEmpty()) {
+        if (candidateEmail == null || candidateEmail.strip().isEmpty()) {
             return false;
         }
-        return EMAIL_REGEX.matcher(candidateEmail.trim()).matches();
+        return EMAIL_REGEX.matcher(candidateEmail.strip().toLowerCase()).matches();
     }
 
     public boolean isSuperAdmin() {
