@@ -1,4 +1,4 @@
-name: CI & DevEx AI Code Review
+﻿name: CI & DevEx AI Code Review
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write      # Required for AWS OIDC authentication
+  id-token: write      # Required for Google Cloud Workload Identity Federation (WIF) OIDC
   pull-requests: read
   checks: write
 
@@ -76,56 +76,50 @@ jobs:
           retention-days: 7
 
   # =========================================================================
-  # Job 2: Trigger Central DevEx AI Review Lambda (Only if Gates Pass)
+  # Job 2: Trigger Central DevEx AI Review on GCP (Cloud Function / Cloud Run)
   # =========================================================================
-  trigger-devex-review-lambda:
-    name: Trigger DevEx AI Review Lambda
+  trigger-devex-review-gcp:
+    name: Trigger DevEx AI Review (GCP Cloud Function)
     needs: build-and-test
     if: github.event_name == 'pull_request' && needs.build-and-test.outputs.gate_passed == 'true'
     runs-on: ubuntu-latest
 
     steps:
-      # Option A: Direct AWS Lambda Invocation via AWS OIDC Credentials
-      - name: Configure AWS Credentials
-        if: env.USE_DIRECT_LAMBDA_INVOKE == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
+      # Option A: Google Cloud Workload Identity Federation (WIF) Authentication
+      # Generates an authenticated GCP ID token to securely invoke a private Cloud Function
+      - name: Authenticate to Google Cloud via WIF
+        if: env.USE_GCP_WIF == 'true'
+        id: gcp-auth
+        uses: google-github-actions/auth@v2
         with:
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-          role-to-assume: ${{ secrets.DEVEX_AWS_ROLE_ARN }}
-          audience: sts.amazonaws.com
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          token_format: 'id_token'
+          id_token_target_audience: ${{ secrets.GCP_FUNCTION_URL }}
+          id_token_include_email: true
 
-      - name: Invoke start-pipeline Lambda directly
-        if: env.USE_DIRECT_LAMBDA_INVOKE == 'true'
+      - name: Dispatch Authenticated Event to GCP Cloud Function (via ID Token)
+        if: env.USE_GCP_WIF == 'true'
         run: |
-          PAYLOAD=$(cat <<EOF
-          {
-            "repository": "${{ github.repository }}",
-            "pr_number": ${{ github.event.pull_request.number }},
-            "commit_sha": "${{ github.event.pull_request.head.sha }}",
-            "pr_title": "${{ github.event.pull_request.title }}",
-            "ref": "${{ github.ref }}",
-            "coverage_percentage": ${{ needs.build-and-test.outputs.coverage_percentage }},
-            "headers": {
-              "x-api-key": "${{ secrets.DEVEX_PIPELINE_API_KEY }}"
-            }
-          }
-          EOF
-          )
+          echo "Invoking GCP Cloud Function with Google ID Token..."
+          curl --fail-with-body -X POST "${{ secrets.GCP_FUNCTION_URL }}" \
+            -H "Authorization: Bearer ${{ steps.gcp-auth.outputs.id_token }}" \
+            -H "Content-Type: application/json" \
+            -H "X-Api-Key: ${{ secrets.DEVEX_PIPELINE_API_KEY }}" \
+            -d '{
+              "repository": "${{ github.repository }}",
+              "pr_number": ${{ github.event.pull_request.number }},
+              "commit_sha": "${{ github.event.pull_request.head.sha }}",
+              "pr_title": "${{ github.event.pull_request.title }}",
+              "coverage_percentage": ${{ needs.build-and-test.outputs.coverage_percentage }}
+            }'
 
-          aws lambda invoke \
-            --function-name "${{ secrets.DEVEX_LAMBDA_NAME || 'devex-ai-review-start-pipeline' }}" \
-            --invocation-type Event \
-            --payload "$(echo "$PAYLOAD" | base64)" \
-            response.json
-
-          echo "start-pipeline Lambda invoked asynchronously (Event type)."
-
-      # Option B: HTTPS API Gateway / Function URL Webhook Invocation
-      - name: Dispatch Webhook to start-pipeline Lambda Endpoint
-        if: env.USE_DIRECT_LAMBDA_INVOKE != 'true'
+      # Option B: Direct HTTPS Webhook with Shared API Key (X-Api-Key)
+      - name: Dispatch Webhook to GCP Cloud Function Endpoint
+        if: env.USE_GCP_WIF != 'true'
         run: |
-          echo "Dispatching authenticated webhook to central DevEx AI Review Lambda..."
-          curl --fail-with-body -X POST "${{ secrets.DEVEX_PIPELINE_ENDPOINT || 'https://api.devex.internal/v1/reviews/start' }}" \
+          echo "Dispatching authenticated webhook to central DevEx GCP Cloud Function..."
+          curl --fail-with-body -X POST "${{ secrets.GCP_FUNCTION_URL || secrets.DEVEX_PIPELINE_ENDPOINT }}" \
             -H "Content-Type: application/json" \
             -H "X-Api-Key: ${{ secrets.DEVEX_PIPELINE_API_KEY }}" \
             -d '{
