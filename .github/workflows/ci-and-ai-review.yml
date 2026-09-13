@@ -1,4 +1,4 @@
-﻿name: CI & DevEx AI Code Review
+name: CI & DevEx AI Code Review
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/**'
       - 'pom.xml'
+      - 'CR.md'
   push:
     branches: [main, master]
 
@@ -78,7 +79,7 @@ jobs:
           retention-days: 7
 
   # =========================================================================
-  # Job 2: Trigger Central DevEx AI Review on GCP (Cloud Function / Cloud Run)
+  # Job 2: Package Diff + CR.md & Trigger Central DevEx AI Review on GCP
   # =========================================================================
   trigger-devex-review-gcp:
     name: Trigger DevEx AI Review (GCP Cloud Function)
@@ -87,6 +88,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code with History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Package PR Diff and CR.md
+        id: package-context
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1 || true
+          PR_DIFF=$(git diff origin/${{ github.base_ref }}...HEAD)
+          CR_MD=""
+          if [ -f "CR.md" ]; then
+            CR_MD=$(cat CR.md)
+          fi
+
+          # Safe JSON construction with jq
+          jq -n \
+            --arg repo "${{ github.repository }}" \
+            --arg pr "${{ github.event.pull_request.number }}" \
+            --arg sha "${{ github.event.pull_request.head.sha }}" \
+            --arg title "${{ github.event.pull_request.title }}" \
+            --arg cov "${{ needs.build-and-test.outputs.coverage_percentage }}" \
+            --arg diff "$PR_DIFF" \
+            --arg cr "$CR_MD" \
+            '{
+              repository: $repo,
+              pr_number: ($pr | tonumber),
+              commit_sha: $sha,
+              pr_title: $title,
+              coverage_percentage: ($cov | tonumber),
+              diff_text: $diff,
+              cr_rules_content: $cr
+            }' > /tmp/devex_payload.json
+
       # Option A: Google Cloud Workload Identity Federation (WIF) Authentication
       - name: Authenticate to Google Cloud via WIF
         if: env.USE_GCP_WIF == 'true'
@@ -102,31 +137,21 @@ jobs:
       - name: Dispatch Authenticated Event to GCP Cloud Function (via ID Token)
         if: env.USE_GCP_WIF == 'true'
         run: |
-          echo "Invoking GCP Cloud Function with Google ID Token..."
+          echo "Invoking GCP Cloud Function with Google ID Token, inlined diff, and CR.md..."
           curl --fail-with-body -X POST "${{ secrets.GCP_FUNCTION_URL }}" \
             -H "Authorization: Bearer ${{ steps.gcp-auth.outputs.id_token }}" \
             -H "Content-Type: application/json" \
             -H "X-Api-Key: ${{ secrets.DEVEX_PIPELINE_API_KEY }}" \
-            -d '{
-              "repository": "${{ github.repository }}",
-              "pr_number": ${{ github.event.pull_request.number }},
-              "commit_sha": "${{ github.event.pull_request.head.sha }}",
-              "pr_title": "${{ github.event.pull_request.title }}",
-              "coverage_percentage": ${{ needs.build-and-test.outputs.coverage_percentage }}
-            }'
+            -H "X-GitHub-Token: ${{ secrets.GITHUB_TOKEN }}" \
+            -d @/tmp/devex_payload.json
 
       # Option B: Direct HTTPS Webhook with Shared API Key (X-Api-Key)
       - name: Dispatch Webhook to GCP Cloud Function Endpoint
         if: env.USE_GCP_WIF != 'true'
         run: |
-          echo "Dispatching authenticated webhook to central DevEx GCP Cloud Function..."
+          echo "Dispatching webhook to central DevEx GCP Cloud Function with inlined diff and CR.md..."
           curl --fail-with-body -X POST "${{ secrets.GCP_FUNCTION_URL || secrets.DEVEX_PIPELINE_ENDPOINT }}" \
             -H "Content-Type: application/json" \
             -H "X-Api-Key: ${{ secrets.DEVEX_PIPELINE_API_KEY }}" \
-            -d '{
-              "repository": "${{ github.repository }}",
-              "pr_number": ${{ github.event.pull_request.number }},
-              "commit_sha": "${{ github.event.pull_request.head.sha }}",
-              "pr_title": "${{ github.event.pull_request.title }}",
-              "coverage_percentage": ${{ needs.build-and-test.outputs.coverage_percentage }}
-            }'
+            -H "X-GitHub-Token: ${{ secrets.GITHUB_TOKEN }}" \
+            -d @/tmp/devex_payload.json
