@@ -37,6 +37,21 @@ public class UserTest {
     }
 
     @Test
+    void testAdminCheck() {
+        User admin = new User(20L, "tenant_a", "admin@example.com", "Admin", "ADMIN");
+        assertTrue(admin.isAdmin());
+
+        User superAdmin = new User(21L, "tenant_a", "super@example.com", "Super", "SUPER_ADMIN");
+        assertTrue(superAdmin.isAdmin());
+
+        User regular = new User(22L, "tenant_a", "user@example.com", "Regular", "USER");
+        assertFalse(regular.isAdmin());
+
+        User nullRole = new User(23L, "tenant_a", "norole@example.com", "NoRole", null);
+        assertFalse(nullRole.isAdmin());
+    }
+
+    @Test
     void testSuperAdminCheck() {
         User admin = new User(2L, "tenant_a", "admin@example.com", "Admin", "SUPER_ADMIN");
         assertTrue(admin.isSuperAdmin());
