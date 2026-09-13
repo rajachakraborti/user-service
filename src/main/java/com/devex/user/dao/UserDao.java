@@ -25,11 +25,10 @@ public class UserDao {
      */
     public Optional<User> findByEmail(String tenantId, String email) throws SQLException {
         String sql = "SELECT id, tenant_id, email, full_name, role, created_at, updated_at, active " +
-                     "FROM users WHERE tenant_id = ? AND email = ?";
+                     "FROM users WHERE email = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, tenantId);
-            stmt.setString(2, email);
+            stmt.setString(1, email);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
