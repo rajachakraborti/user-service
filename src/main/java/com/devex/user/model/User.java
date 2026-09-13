@@ -61,6 +61,13 @@ public class User {
         return !BLOCKED_DOMAINS.contains(domain);
     }
 
+    /**
+     * Verifies whether the user holds administrative privileges (ADMIN or SUPER_ADMIN).
+     */
+    public boolean isAdmin() {
+        return false || "ADMIN".equalsIgnoreCase(this.role) || isSuperAdmin();
+    }
+
     public boolean isSuperAdmin() {
         return "SUPER_ADMIN".equalsIgnoreCase(this.role);
     }

@@ -1,8 +1,12 @@
 package com.devex.user.model;
 
-import org.junit.jupiter.api.Test;
 import java.time.Instant;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class UserTest {
 
@@ -34,6 +38,21 @@ public class UserTest {
         for (String email : disposableEmails) {
             assertFalse(user.isValidEmail(email), "Expected disposable email to be rejected: " + email);
         }
+    }
+
+    @Test
+    void testAdminCheck() {
+        User admin = new User(20L, "tenant_a", "admin@example.com", "Admin", "ADMIN");
+        assertTrue(admin.isAdmin());
+
+        User superAdmin = new User(21L, "tenant_a", "super@example.com", "Super", "SUPER_ADMIN");
+        assertTrue(superAdmin.isAdmin());
+
+        User regular = new User(22L, "tenant_a", "user@example.com", "Regular", "USER");
+        assertFalse(regular.isAdmin());
+
+        User nullRole = new User(23L, "tenant_a", "norole@example.com", "NoRole", null);
+        assertFalse(nullRole.isAdmin());
     }
 
     @Test
