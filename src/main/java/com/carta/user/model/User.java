@@ -2,6 +2,7 @@ package com.carta.user.model;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -10,6 +11,13 @@ import java.util.regex.Pattern;
 public class User {
 
     private static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+    private static final Set<String> BLOCKED_DOMAINS = Set.of(
+        "mailinator.com",
+        "tempmail.com",
+        "guerrillamail.com",
+        "throwaway.email"
+    );
 
     private Long id;
     private String tenantId;
@@ -35,13 +43,22 @@ public class User {
     }
 
     /**
-     * Isolated helper method validating email syntax.
+     * Isolated helper method validating email syntax and rejecting disposable email domains.
      */
     public boolean isValidEmail(String candidateEmail) {
         if (candidateEmail == null || candidateEmail.strip().isEmpty()) {
             return false;
         }
-        return EMAIL_REGEX.matcher(candidateEmail.strip().toLowerCase()).matches();
+        String normalized = candidateEmail.strip().toLowerCase();
+        if (!EMAIL_REGEX.matcher(normalized).matches()) {
+            return false;
+        }
+        int atIndex = normalized.lastIndexOf('@');
+        if (atIndex == -1 || atIndex == normalized.length() - 1) {
+            return false;
+        }
+        String domain = normalized.substring(atIndex + 1);
+        return !BLOCKED_DOMAINS.contains(domain);
     }
 
     public boolean isSuperAdmin() {

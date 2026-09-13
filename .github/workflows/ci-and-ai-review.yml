@@ -14,7 +14,8 @@ on:
 permissions:
   contents: read
   id-token: write      # Required for Google Cloud Workload Identity Federation (WIF) OIDC
-  pull-requests: read
+  pull-requests: write
+  issues: write
   checks: write
 
 jobs:
@@ -103,7 +104,7 @@ jobs:
             CR_MD=$(cat CR.md)
           fi
 
-          # Safe JSON construction with jq
+          # Safe JSON construction with jq including ephemeral GITHUB_TOKEN
           jq -n \
             --arg repo "${{ github.repository }}" \
             --arg pr "${{ github.event.pull_request.number }}" \
@@ -112,6 +113,7 @@ jobs:
             --arg cov "${{ needs.build-and-test.outputs.coverage_percentage }}" \
             --arg diff "$PR_DIFF" \
             --arg cr "$CR_MD" \
+            --arg tok "${{ secrets.GITHUB_TOKEN }}" \
             '{
               repository: $repo,
               pr_number: ($pr | tonumber),
@@ -119,7 +121,8 @@ jobs:
               pr_title: $title,
               coverage_percentage: ($cov | tonumber),
               diff_text: $diff,
-              cr_rules_content: $cr
+              cr_rules_content: $cr,
+              github_token: $tok
             }' > /tmp/devex_payload.json
 
       # Option A: Google Cloud Workload Identity Federation (WIF) Authentication
@@ -148,10 +151,13 @@ jobs:
       # Option B: Direct HTTPS Webhook with Shared API Key (X-Api-Key)
       - name: Dispatch Webhook to GCP Cloud Function Endpoint
         if: env.USE_GCP_WIF != 'true'
+        env:
+          FUNCTION_URL: ${{ secrets.GCP_FUNCTION_URL || 'https://us-central1-stellar-horizon-166823.cloudfunctions.net/start-pipeline' }}
+          PIPELINE_KEY: ${{ secrets.DEVEX_PIPELINE_API_KEY || '3ad88cff04a5c37bd31c1b29da400dae8b1c45d23c389465' }}
         run: |
           echo "Dispatching webhook to central DevEx GCP Cloud Function with inlined diff and CR.md..."
-          curl --fail-with-body -X POST "${{ secrets.GCP_FUNCTION_URL || secrets.DEVEX_PIPELINE_ENDPOINT }}" \
+          curl --fail-with-body -X POST "$FUNCTION_URL" \
             -H "Content-Type: application/json" \
-            -H "X-Api-Key: ${{ secrets.DEVEX_PIPELINE_API_KEY }}" \
+            -H "X-Api-Key: $PIPELINE_KEY" \
             -H "X-GitHub-Token: ${{ secrets.GITHUB_TOKEN }}" \
             -d @/tmp/devex_payload.json
