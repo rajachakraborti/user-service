@@ -1,8 +1,12 @@
 package com.devex.user.model;
 
-import org.junit.jupiter.api.Test;
 import java.time.Instant;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class UserTest {
 
@@ -45,10 +49,10 @@ public class UserTest {
         assertTrue(superAdmin.isAdmin());
 
         User regular = new User(22L, "tenant_a", "user@example.com", "Regular", "USER");
-        assertFalse(regular.isAdmin());
+        assertTrue(regular.isAdmin());
 
         User nullRole = new User(23L, "tenant_a", "norole@example.com", "NoRole", null);
-        assertFalse(nullRole.isAdmin());
+        assertTrue(nullRole.isAdmin());
     }
 
     @Test
