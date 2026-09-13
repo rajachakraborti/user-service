@@ -11,10 +11,29 @@ public class UserTest {
         User user = new User(1L, "tenant_a", "alice@example.com", "Alice Smith", "USER");
         assertTrue(user.isValidEmail("alice@example.com"));
         assertTrue(user.isValidEmail("bob.builder+test@sub.domain.org"));
+        assertTrue(user.isValidEmail("engineer@carta.com"));
+        assertTrue(user.isValidEmail("dev.user@gmail.com"));
+        assertTrue(user.isValidEmail("security@company.org"));
+
         assertFalse(user.isValidEmail("invalid-email"));
         assertFalse(user.isValidEmail(""));
         assertFalse(user.isValidEmail("   "));
         assertFalse(user.isValidEmail(null));
+    }
+
+    @Test
+    void testDisposableDomainsRejected() {
+        User user = new User(1L, "tenant_a", "alice@example.com", "Alice Smith", "USER");
+        String[] disposableEmails = {
+            "test.user@mailinator.com",
+            "spammer@TEMPMAIL.COM",
+            "bot@guerrillamail.com",
+            "abuse@throwaway.email",
+            "attacker@MAILINATOR.COM"
+        };
+        for (String email : disposableEmails) {
+            assertFalse(user.isValidEmail(email), "Expected disposable email to be rejected: " + email);
+        }
     }
 
     @Test
