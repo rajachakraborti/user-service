@@ -1,4 +1,4 @@
-package com.carta.user.dto;
+package com.devex.user.dto;
 
 import java.time.Instant;
 

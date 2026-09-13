@@ -1,4 +1,4 @@
-# Carta User Service
+# User Service
 
 Standalone multi-tenant Java microservice domain project.
 

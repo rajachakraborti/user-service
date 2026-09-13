@@ -1,5 +1,5 @@
---- a/src/main/java/com/carta/user/model/User.java
-+++ b/src/main/java/com/carta/user/model/User.java
+--- a/src/main/java/com/devex/user/model/User.java
++++ b/src/main/java/com/devex/user/model/User.java
 @@ -43,6 +43,8 @@ public class User {
       */
      public boolean isValidEmail(String candidateEmail) {

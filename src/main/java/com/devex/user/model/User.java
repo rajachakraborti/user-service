@@ -1,4 +1,4 @@
-package com.carta.user.model;
+package com.devex.user.model;
 
 import java.time.Instant;
 import java.util.Objects;

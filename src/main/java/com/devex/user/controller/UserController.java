@@ -1,8 +1,8 @@
-package com.carta.user.controller;
+package com.devex.user.controller;
 
-import com.carta.user.context.TenantContext;
-import com.carta.user.dto.UserProfileDTO;
-import com.carta.user.service.UserService;
+import com.devex.user.context.TenantContext;
+import com.devex.user.dto.UserProfileDTO;
+import com.devex.user.service.UserService;
 import java.util.Optional;
 
 /**

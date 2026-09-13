@@ -1,4 +1,4 @@
-package com.carta.user.context;
+package com.devex.user.context;
 
 /**
  * Thread-local security context storing current authenticated tenant identity.

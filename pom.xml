@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.carta</groupId>
+    <groupId>com.devex</groupId>
     <artifactId>user-service</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Carta User Service Microservice</name>
+    <name>User Service Microservice</name>
     <description>Core multi-tenant user domain service hooked into DevEx AI Code Review Pipeline</description>
 
     <properties>

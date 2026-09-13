@@ -1,4 +1,4 @@
-package com.carta.user.model;
+package com.devex.user.model;
 
 import org.junit.jupiter.api.Test;
 import java.time.Instant;
@@ -11,7 +11,7 @@ public class UserTest {
         User user = new User(1L, "tenant_a", "alice@example.com", "Alice Smith", "USER");
         assertTrue(user.isValidEmail("alice@example.com"));
         assertTrue(user.isValidEmail("bob.builder+test@sub.domain.org"));
-        assertTrue(user.isValidEmail("engineer@carta.com"));
+        assertTrue(user.isValidEmail("engineer@example.com"));
         assertTrue(user.isValidEmail("dev.user@gmail.com"));
         assertTrue(user.isValidEmail("security@company.org"));
 

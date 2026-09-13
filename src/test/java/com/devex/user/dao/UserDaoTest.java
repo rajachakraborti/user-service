@@ -1,6 +1,6 @@
-package com.carta.user.dao;
+package com.devex.user.dao;
 
-import com.carta.user.model.User;
+import com.devex.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

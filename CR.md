@@ -38,7 +38,7 @@ The following code modifications are pre-approved by the senior engineering team
 
 - **[APPROVED]**: Replacing `candidateEmail.trim()` with `candidateEmail.strip()` in `User.isValidEmail()` is pre-approved and compliant with ADR-003.
 - **[APPROVED]**: Using `query(...)` inside `UserDao.java` without Spring Data JPA / Hibernate annotations is approved per ADR-002.
-- **[APPROVED]**: Self-contained helper methods and pure logic refactors in `src/main/java/com/carta/user/model/` do not require external service call-graph widening.
+- **[APPROVED]**: Self-contained helper methods and pure logic refactors in `src/main/java/com/devex/user/model/` do not require external service call-graph widening.
 - **[APPROVED]**: Spring `@RequestHeader("X-Tenant-ID")` is the sanctioned mechanism for receiving tenant context at controller ingress.
 
 ---

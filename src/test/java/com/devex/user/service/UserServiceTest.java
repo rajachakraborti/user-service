@@ -1,9 +1,9 @@
-package com.carta.user.service;
+package com.devex.user.service;
 
-import com.carta.user.context.TenantContext;
-import com.carta.user.dao.UserDao;
-import com.carta.user.dto.UserProfileDTO;
-import com.carta.user.model.User;
+import com.devex.user.context.TenantContext;
+import com.devex.user.dao.UserDao;
+import com.devex.user.dto.UserProfileDTO;
+import com.devex.user.model.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

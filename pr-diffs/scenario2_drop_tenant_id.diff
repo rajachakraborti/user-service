@@ -1,5 +1,5 @@
---- a/src/main/java/com/carta/user/dao/UserDao.java
-+++ b/src/main/java/com/carta/user/dao/UserDao.java
+--- a/src/main/java/com/devex/user/dao/UserDao.java
++++ b/src/main/java/com/devex/user/dao/UserDao.java
 @@ -25,5 +25,4 @@ public class UserDao {
      public Optional<User> findByEmail(String tenantId, String email) throws SQLException {
 -        String sql = "SELECT id, tenant_id, email, full_name, role, created_at, updated_at, active " +

@@ -1,6 +1,6 @@
-package com.carta.user.dao;
+package com.devex.user.dao;
 
-import com.carta.user.model.User;
+import com.devex.user.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
