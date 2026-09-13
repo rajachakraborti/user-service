@@ -49,10 +49,10 @@ public class UserTest {
         assertTrue(superAdmin.isAdmin());
 
         User regular = new User(22L, "tenant_a", "user@example.com", "Regular", "USER");
-        assertTrue(regular.isAdmin());
+        assertFalse(regular.isAdmin());
 
         User nullRole = new User(23L, "tenant_a", "norole@example.com", "NoRole", null);
-        assertTrue(nullRole.isAdmin());
+        assertFalse(nullRole.isAdmin());
     }
 
     @Test

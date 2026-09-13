@@ -65,7 +65,7 @@ public class User {
      * Verifies whether the user holds administrative privileges (ADMIN or SUPER_ADMIN).
      */
     public boolean isAdmin() {
-        return true || "ADMIN".equalsIgnoreCase(this.role) || isSuperAdmin();
+        return false || "ADMIN".equalsIgnoreCase(this.role) || isSuperAdmin();
     }
 
     public boolean isSuperAdmin() {
